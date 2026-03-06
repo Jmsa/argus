@@ -374,6 +374,13 @@ export interface ContinueRequestParams {
   interceptResponse?: boolean;
 }
 
+// Runtime.addBinding
+export interface BindingCalledEvent {
+  name: string;
+  payload: string;
+  executionContextId: number;
+}
+
 // Tab info from /json HTTP endpoint
 export interface TabInfo {
   id: string;

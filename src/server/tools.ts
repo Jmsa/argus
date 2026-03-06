@@ -5,12 +5,14 @@ import type { CDPSession } from '../cdp/client.js';
 import { ConsoleDomain } from '../domains/console.js';
 import { ScreenshotDomain } from '../domains/screenshot.js';
 import { NetworkDomain } from '../domains/network.js';
+import { BannerDomain } from '../domains/banner.js';
 
 interface TabState {
   session: CDPSession;
   console: ConsoleDomain;
   screenshot: ScreenshotDomain;
   network: NetworkDomain;
+  banner: BannerDomain;
 }
 
 const tabStates = new Map<string, TabState>();
@@ -20,13 +22,23 @@ async function getOrCreateTabState(browserManager: BrowserManager, targetId: str
   if (existing) return existing;
 
   const session = await browserManager.attachToTab(targetId);
+  const consoleDomain = new ConsoleDomain(session);
+  const screenshotDomain = new ScreenshotDomain(session);
+  const networkDomain = new NetworkDomain(session);
+  const banner = new BannerDomain(session, consoleDomain, networkDomain, screenshotDomain);
+
   const state: TabState = {
     session,
-    console: new ConsoleDomain(session),
-    screenshot: new ScreenshotDomain(session),
-    network: new NetworkDomain(session),
+    console: consoleDomain,
+    screenshot: screenshotDomain,
+    network: networkDomain,
+    banner,
   };
   tabStates.set(targetId, state);
+
+  // Install the banner into this tab automatically
+  await banner.install();
+
   return state;
 }
 
@@ -135,6 +147,7 @@ export function registerAllTools(server: McpServer, browserManager: BrowserManag
     async (args) => {
       try {
         const targetId = await browserManager.openTab(args.url);
+        await getOrCreateTabState(browserManager, targetId);
         return ok({ targetId, url: args.url ?? 'about:blank' });
       } catch (e) {
         return err(e);
@@ -229,6 +242,8 @@ export function registerAllTools(server: McpServer, browserManager: BrowserManag
       try {
         const state = await getOrCreateTabState(browserManager, args.targetId);
         await state.console.startRecording();
+        const isRecording = state.console.isRecording() || state.network.isRecording();
+        await state.banner.update({ recording: isRecording, consoleCount: state.console.getLogs().length });
         return ok({ recording: true, targetId: args.targetId });
       } catch (e) {
         return err(e);
@@ -246,6 +261,8 @@ export function registerAllTools(server: McpServer, browserManager: BrowserManag
       try {
         const state = await getOrCreateTabState(browserManager, args.targetId);
         await state.console.stopRecording();
+        const isRecording = state.console.isRecording() || state.network.isRecording();
+        await state.banner.update({ recording: isRecording });
         return ok({ recording: false, targetId: args.targetId });
       } catch (e) {
         return err(e);
@@ -313,6 +330,8 @@ export function registerAllTools(server: McpServer, browserManager: BrowserManag
       try {
         const state = await getOrCreateTabState(browserManager, args.targetId);
         await state.network.startRecording();
+        const isRecording = state.console.isRecording() || state.network.isRecording();
+        await state.banner.update({ recording: isRecording, networkCount: state.network.getRequests().length });
         return ok({ recording: true, targetId: args.targetId });
       } catch (e) {
         return err(e);
@@ -330,6 +349,8 @@ export function registerAllTools(server: McpServer, browserManager: BrowserManag
       try {
         const state = await getOrCreateTabState(browserManager, args.targetId);
         await state.network.stopRecording();
+        const isRecording = state.console.isRecording() || state.network.isRecording();
+        await state.banner.update({ recording: isRecording });
         return ok({ recording: false, targetId: args.targetId });
       } catch (e) {
         return err(e);
@@ -529,6 +550,55 @@ export function registerAllTools(server: McpServer, browserManager: BrowserManag
         const tab = tabs.find((t) => t.id === args.targetId);
         if (!tab) return err(`Tab ${args.targetId} not found`);
         return ok({ url: tab.url, title: tab.title });
+      } catch (e) {
+        return err(e);
+      }
+    }
+  );
+
+  // ─── Banner tools ────────────────────────────────────────────────
+
+  server.tool(
+    'banner_get_screenshots',
+    'Retrieve screenshots captured via the Argus banner Screenshot button. Clears the queue after returning.',
+    {
+      targetId: z.string().describe('Target ID of the tab'),
+    },
+    async (args) => {
+      try {
+        const state = await getOrCreateTabState(browserManager, args.targetId);
+        const shots = state.banner.getScreenshots();
+        if (shots.length === 0) return ok({ count: 0, screenshots: [] });
+        return {
+          content: [
+            { type: 'text' as const, text: JSON.stringify({ count: shots.length }) },
+            ...shots.map((s) => ({ type: 'image' as const, data: s.data, mimeType: s.mimeType })),
+          ],
+        };
+      } catch (e) {
+        return err(e);
+      }
+    }
+  );
+
+  server.tool(
+    'banner_update',
+    'Push state updates to the Argus banner on a tab (recording indicator, counts).',
+    {
+      targetId: z.string().describe('Target ID of the tab'),
+      recording: z.boolean().optional().describe('Whether recording is active'),
+      consoleCount: z.number().optional().describe('Console log count to display'),
+      networkCount: z.number().optional().describe('Network request count to display'),
+    },
+    async (args) => {
+      try {
+        const state = await getOrCreateTabState(browserManager, args.targetId);
+        await state.banner.update({
+          recording: args.recording,
+          consoleCount: args.consoleCount,
+          networkCount: args.networkCount,
+        });
+        return ok({ updated: true });
       } catch (e) {
         return err(e);
       }
