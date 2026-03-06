@@ -1,13 +1,16 @@
-# Skill: Reproduce & Isolate an Issue
+---
+name: repro-issue
+description: Reproduce a bug and use Argus network mocks to isolate whether it is caused by the frontend or a specific API response. Use when asked to reproduce, isolate, or bisect a bug.
+argument-hint: <url> <description of bug>
+---
 
-Use this workflow when you need to reproduce a bug, then use network mocks to isolate
-whether it is caused by the frontend or a specific API response.
+Reproduce and isolate the following issue using Argus: $ARGUMENTS
 
 ## Steps
 
 1. **Launch and set up recording**
    ```
-   browser_launch { headless: false }
+   browser_launch
    tab_open { url: "about:blank" }
    console_start { targetId }
    network_start_recording { targetId }
@@ -17,14 +20,14 @@ whether it is caused by the frontend or a specific API response.
    ```
    network_add_mock {
      targetId,
-     urlPattern: "**/api/users",
+     urlPattern: "**/api/endpoint",
      responseCode: 200,
-     responseBody: '{"users": []}',
+     responseBody: '{"key": "value"}',
      responseHeaders: { "content-type": "application/json" }
    }
    ```
    - Use `**` to match any prefix/suffix
-   - Mock the API state that is expected to trigger the bug
+   - Mock the API state expected to trigger the bug
 
 3. **Navigate and trigger the issue**
    ```
@@ -48,21 +51,25 @@ whether it is caused by the frontend or a specific API response.
 6. **Verify the fix**
    ```
    network_clear_mocks { targetId }
-   network_add_mock { targetId, urlPattern: "**/api/users", responseCode: 200, responseBody: '{"users": [{"id":1}]}' }
+   network_add_mock { targetId, urlPattern: "**/api/endpoint", responseCode: 200, responseBody: '{"fixed": true}' }
    page_reload { targetId }
    console_get_logs { targetId, type: "error" }   ← should be empty
    tab_screenshot { targetId }                     ← should show fixed state
    ```
 
-## Common Patterns
+7. **Report findings** — include:
+   - Which mock configuration reproduced the bug
+   - Which change made it disappear
+   - Screenshot evidence of both states
+   - Recommended fix
+
+## Common Mock Patterns
 
 | Scenario | Mock setup |
 |---|---|
 | Empty API response | `responseBody: '[]'` or `'{}'` |
-| API error | `responseCode: 500`, `responseBody: '{"error":"Internal Server Error"}'` |
-| Auth failure | `responseCode: 401`, `responseBody: '{"error":"Unauthorized"}'` |
-| Slow response | Not directly supported — use real network with throttling via DevTools |
-| CORS error | Impossible to mock via Fetch domain (browser blocks before interception) |
+| API error | `responseCode: 500, responseBody: '{"error":"Internal Server Error"}'` |
+| Auth failure | `responseCode: 401, responseBody: '{"error":"Unauthorized"}'` |
 
 ## Tips
 

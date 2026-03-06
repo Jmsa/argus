@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "argus": {
+      "type": "stdio",
+      "command": "npm",
+      "args": ["run", "dev"],
+      "env": {
+        "ARGUS_NO_LAUNCH": "1"
+      }
+    }
+  }
+}

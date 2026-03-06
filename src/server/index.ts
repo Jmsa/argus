@@ -7,15 +7,18 @@ import { registerAllTools } from './tools.js';
 
 const browserManager = new BrowserManager({ headless: false });
 
-// Auto-launch Chrome and inject the welcome page
-process.stderr.write('[argus] Launching Chrome...\n');
-await browserManager.launch();
-process.stderr.write('[argus] Chrome ready.\n');
+if (process.env['ARGUS_NO_LAUNCH'] !== '1') {
+  process.stderr.write('[argus] Launching Chrome...\n');
+  await browserManager.launch();
+  process.stderr.write('[argus] Chrome ready.\n');
 
-const welcomeTargetId = await browserManager.openTab('about:blank');
-const welcomeSession = await browserManager.attachToTab(welcomeTargetId);
-await injectWelcomePage(welcomeSession, welcomeTargetId);
-process.stderr.write(`[argus] Welcome page open — targetId: ${welcomeTargetId}\n`);
+  const welcomeTargetId = await browserManager.openTab('about:blank');
+  const welcomeSession = await browserManager.attachToTab(welcomeTargetId);
+  await injectWelcomePage(welcomeSession, welcomeTargetId);
+  process.stderr.write(`[argus] Welcome page open — targetId: ${welcomeTargetId}\n`);
+} else {
+  process.stderr.write('[argus] ARGUS_NO_LAUNCH set — skipping auto-launch. Use browser_launch or browser_connect.\n');
+}
 
 // Register MCP tools and start stdio transport
 const server = new McpServer({

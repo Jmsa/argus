@@ -46,27 +46,21 @@ Chrome Canary opens automatically on startup with the Argus welcome page. Connec
 
 ### MCP Client Configuration
 
-Add Argus to your MCP client config (e.g. Claude Desktop `claude_desktop_config.json`):
+**Claude Code** — run this once from the project root:
 
-```json
-{
-  "mcpServers": {
-    "argus": {
-      "command": "npx",
-      "args": ["argus-mcp"]
-    }
-  }
-}
+```bash
+claude mcp add --transport stdio argus -- npm run dev
 ```
 
-Or point directly at the project:
+**Claude Desktop** — add to `claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
     "argus": {
-      "command": "node",
-      "args": ["/path/to/argus/dist/server/index.js"]
+      "type": "stdio",
+      "command": "npm",
+      "args": ["run", "dev"]
     }
   }
 }
@@ -132,13 +126,17 @@ Argus exposes 22 tools across six groups.
 
 ## Skills
 
-Skills are workflow guides for common debugging scenarios. See the [`skills/`](skills/) directory.
+Skills are Claude Code workflows that invoke Argus tools automatically. Install the plugin to get them as slash commands:
 
-| Skill | Description |
-|---|---|
-| [`debug-session`](skills/debug-session.md) | Capture a complete debugging snapshot — console, network, screenshot |
-| [`repro-issue`](skills/repro-issue.md) | Reproduce a bug using mocks to isolate frontend vs API |
-| [`network-debug`](skills/network-debug.md) | Investigate failed requests, slow responses, and mock verification |
+```bash
+/plugin install Jmsa/argus
+```
+
+| Skill | Command | Description |
+|---|---|---|
+| [`debug-session`](skills/debug-session/SKILL.md) | `/argus:debug-session <url>` | Capture a complete debugging snapshot — console, network, screenshot |
+| [`repro-issue`](skills/repro-issue/SKILL.md) | `/argus:repro-issue <url> <bug description>` | Reproduce a bug using mocks to isolate frontend vs API |
+| [`network-debug`](skills/network-debug/SKILL.md) | `/argus:network-debug <url>` | Investigate failed requests, slow responses, and mock verification |
 
 ## Documentation
 

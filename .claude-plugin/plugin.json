@@ -1,0 +1,9 @@
+{
+  "name": "argus",
+  "version": "1.0.0",
+  "description": "Chrome DevTools Protocol MCP server — give AI agents eyes into a live browser. Records console output, captures screenshots, intercepts network requests, and injects mocks.",
+  "author": {
+    "name": "Jmsa"
+  },
+  "repository": "https://github.com/Jmsa/argus"
+}
