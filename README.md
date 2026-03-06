@@ -1,0 +1,178 @@
+<p align="center">
+  <img src="src/assets/argus.png" alt="Argus" width="1000" />
+</p>
+
+<p align="center">
+  Chrome DevTools Protocol MCP server — give AI agents eyes into a live browser.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/MCP-compatible-blue?style=flat-square" alt="MCP compatible" />
+  <img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=flat-square" alt="Node ≥ 18" />
+  <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="MIT" />
+</p>
+
+---
+
+Argus connects directly to Chrome via the [Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) and exposes browser debugging as MCP tools — no Puppeteer, no Playwright, no browser abstraction layer. Spawn Chrome, attach to tabs, record console output, intercept network requests, inject mocks, and capture screenshots, all from your MCP client.
+
+The name comes from Argus Panoptes — the 100-eyed giant of Greek mythology who could watch everything at once and never fully slept. That's the goal: total visibility into what a browser is doing.
+
+## Features
+
+- **Console recording** — capture `console.log/warn/error` and unhandled exceptions with stack traces
+- **Screenshot capture** — viewport, full-page, or clipped region, returned as base64 PNG/JPEG
+- **Network recording** — record every request and response including body, headers, timing, and errors
+- **Network mocking** — intercept requests by glob pattern and return custom responses, zero page reload required
+- **Multi-tab** — attach to any number of tabs simultaneously, each with independent recording state
+- **No dependencies** — direct WebSocket connection to Chrome's debug port, no browser driver needed
+- **Injectable overlay** — floating status widget injected into every inspected page showing live counts
+
+## Quick Start
+
+```bash
+git clone https://github.com/your-org/argus
+cd argus
+npm install
+npm run dev
+```
+
+Chrome Canary opens automatically on startup with the Argus welcome page. Connect your MCP client to the stdio transport and start using the tools.
+
+### Requirements
+
+- Node ≥ 18
+- Google Chrome or Chrome Canary (macOS, Linux, or Windows)
+
+### MCP Client Configuration
+
+Add Argus to your MCP client config (e.g. Claude Desktop `claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "argus": {
+      "command": "npx",
+      "args": ["argus-mcp"]
+    }
+  }
+}
+```
+
+Or point directly at the project:
+
+```json
+{
+  "mcpServers": {
+    "argus": {
+      "command": "node",
+      "args": ["/path/to/argus/dist/server/index.js"]
+    }
+  }
+}
+```
+
+## Tools
+
+Argus exposes 22 tools across six groups.
+
+### Browser
+
+| Tool | Description |
+|---|---|
+| `browser_launch` | Spawn a new Chrome instance with remote debugging |
+| `browser_connect` | Attach to an already-running Chrome via WebSocket URL |
+| `browser_disconnect` | Disconnect (browser stays open) |
+| `browser_status` | Check connection state and active tab count |
+
+### Tabs
+
+| Tool | Description |
+|---|---|
+| `tab_list` | List all open page tabs |
+| `tab_open` | Open a new tab and navigate to a URL |
+| `tab_navigate` | Navigate an existing tab to a new URL |
+| `tab_close` | Close a tab by `targetId` |
+| `tab_screenshot` | Capture a screenshot (viewport, full-page, or clipped) |
+
+### Console
+
+| Tool | Description |
+|---|---|
+| `console_start` | Begin recording console output and exceptions |
+| `console_stop` | Stop recording |
+| `console_get_logs` | Retrieve logs, filterable by type and text |
+| `console_clear` | Discard captured log entries |
+
+### Network Recording
+
+| Tool | Description |
+|---|---|
+| `network_start_recording` | Enable network capture (requests, responses, bodies) |
+| `network_stop_recording` | Disable network capture |
+| `network_get_requests` | Query captured requests (filter by URL, method, status, error) |
+| `network_clear_requests` | Clear the request history for a tab |
+
+### Network Mocks
+
+| Tool | Description |
+|---|---|
+| `network_add_mock` | Intercept requests matching a glob and return a custom response |
+| `network_remove_mock` | Remove a mock rule by ID |
+| `network_list_mocks` | List active mock rules for a tab |
+| `network_clear_mocks` | Remove all mocks and disable interception |
+
+### Page
+
+| Tool | Description |
+|---|---|
+| `page_evaluate` | Execute JavaScript and return the result |
+| `page_reload` | Reload the tab (optionally bypassing cache) |
+| `page_get_url` | Get the current URL and title of a tab |
+
+## Skills
+
+Skills are workflow guides for common debugging scenarios. See the [`skills/`](skills/) directory.
+
+| Skill | Description |
+|---|---|
+| [`debug-session`](skills/debug-session.md) | Capture a complete debugging snapshot — console, network, screenshot |
+| [`repro-issue`](skills/repro-issue.md) | Reproduce a bug using mocks to isolate frontend vs API |
+| [`network-debug`](skills/network-debug.md) | Investigate failed requests, slow responses, and mock verification |
+
+## Documentation
+
+- [Architecture](docs/architecture.md) — project structure and how the pieces connect
+- [Configuration](docs/configuration.md) — Chrome path, port, headless mode, and custom flags
+- [Network Mocking](docs/network-mocking.md) — glob patterns, mock priority, and request flow
+
+## How It Works
+
+```
+MCP Client (Claude, Inspector, etc.)
+        │  stdio
+        ▼
+  Argus MCP Server
+        │  CDP over WebSocket
+        ▼
+  Chrome / Chrome Canary
+        │  per-tab CDPSession
+        ▼
+  domains: console · screenshot · network · ui
+```
+
+Chrome is spawned as a child process. Argus listens to its stderr for the `DevTools listening on ws://...` line to get the exact WebSocket URL, then connects. Each tab gets its own `CDPSession` (multiplexed over a single WebSocket connection) with independent domain state.
+
+## Development
+
+```bash
+npm run dev       # start with tsx (no build step)
+npm run build     # compile to dist/
+npm run typecheck # type-check without emitting
+```
+
+Chrome profile data is stored at `~/.argus/chrome-profile` so Chrome doesn't reinitialise on every restart.
+
+## License
+
+MIT
