@@ -8,7 +8,7 @@ function buildWelcomeHTML(targetId: string): string {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CDP MCP Server — Ready</title>
+<title>Argus — Ready</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -115,11 +115,11 @@ function buildWelcomeHTML(targetId: string): string {
 </head>
 <body>
 <header>
-  <div class="logo">&#9687; <span>CDP</span> MCP Server</div>
+  <div class="logo">&#9687; <span>Argus</span></div>
   <div class="badge">Connected</div>
 </header>
 <p class="subtitle">
-  Chrome DevTools Protocol via MCP &mdash; remote debugging active on this tab
+  Browser debugging via MCP &mdash; remote debugging active on this tab
   &nbsp;<span class="target-id">${targetId}</span>
 </p>
 
@@ -234,8 +234,8 @@ export const OVERLAY_SCRIPT = `
 (function() {
   'use strict';
 
-  if (window.__cdpOverlayInstalled) return;
-  window.__cdpOverlayInstalled = true;
+  if (window.__argusOverlayInstalled) return;
+  window.__argusOverlayInstalled = true;
 
   var panel = document.createElement('div');
   var isDragging = false;
@@ -244,7 +244,7 @@ export const OVERLAY_SCRIPT = `
   var panelX = 16;
   var panelY = 16;
 
-  panel.id = '__cdp_overlay';
+  panel.id = '__argus_overlay';
   panel.style.cssText = [
     'position: fixed',
     'top: ' + panelY + 'px',
@@ -266,12 +266,12 @@ export const OVERLAY_SCRIPT = `
 
   panel.innerHTML = [
     '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">',
-    '  <span id="__cdp_dot" style="width:8px;height:8px;border-radius:50%;background:#4caf50;flex-shrink:0"></span>',
-    '  <span style="font-weight:bold;color:#90caf9">CDP</span>',
+    '  <span id="__argus_dot" style="width:8px;height:8px;border-radius:50%;background:#4caf50;flex-shrink:0"></span>',
+    '  <span style="font-weight:bold;color:#90caf9">Argus</span>',
     '</div>',
-    '<div id="__cdp_console" style="margin:2px 0;color:#ce93d8">&#9654; Console: <b>0</b></div>',
-    '<div id="__cdp_network" style="margin:2px 0;color:#80cbc4">&#9670; Network: <b>0</b></div>',
-    '<button id="__cdp_screenshot" style="',
+    '<div id="__argus_console" style="margin:2px 0;color:#ce93d8">&#9654; Console: <b>0</b></div>',
+    '<div id="__argus_network" style="margin:2px 0;color:#80cbc4">&#9670; Network: <b>0</b></div>',
+    '<button id="__argus_screenshot" style="',
     '  margin-top:6px;width:100%;background:rgba(100,130,200,0.3);border:1px solid rgba(100,130,200,0.5);',
     '  color:#90caf9;padding:3px 6px;border-radius:3px;cursor:pointer;font-size:10px;font-family:monospace',
     '">Screenshot</button>',
@@ -300,19 +300,19 @@ export const OVERLAY_SCRIPT = `
   });
 
   // Screenshot button
-  var btn = document.getElementById('__cdp_screenshot');
+  var btn = document.getElementById('__argus_screenshot');
   if (btn) {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
-      window.__cdpScreenshotRequested = (window.__cdpScreenshotRequested || 0) + 1;
+      window.__argusScreenshotRequested = (window.__argusScreenshotRequested || 0) + 1;
     });
   }
 
   // External update API
-  window.__cdpUpdateOverlay = function(data) {
-    var dot = document.getElementById('__cdp_dot');
-    var consoleEl = document.getElementById('__cdp_console');
-    var networkEl = document.getElementById('__cdp_network');
+  window.__argusUpdateOverlay = function(data) {
+    var dot = document.getElementById('__argus_dot');
+    var consoleEl = document.getElementById('__argus_console');
+    var networkEl = document.getElementById('__argus_network');
 
     if (dot && data.status) {
       var colors = { connected: '#4caf50', recording: '#ff9800', idle: '#9e9e9e' };
@@ -347,7 +347,7 @@ export class UIDomain {
   async updateOverlay(data: OverlayData): Promise<void> {
     const json = JSON.stringify(data);
     await this.session.send('Runtime.evaluate', {
-      expression: `if (typeof window.__cdpUpdateOverlay === 'function') window.__cdpUpdateOverlay(${json});`,
+      expression: `if (typeof window.__argusUpdateOverlay === 'function') window.__argusUpdateOverlay(${json});`,
       silent: true,
     });
   }

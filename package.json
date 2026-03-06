@@ -1,11 +1,11 @@
 {
-  "name": "cdp-mcp-server",
+  "name": "argus-mcp",
   "version": "1.0.0",
-  "description": "MCP server wrapping Chrome DevTools Protocol",
+  "description": "Argus — Chrome DevTools Protocol MCP server for browser debugging",
   "type": "module",
   "main": "dist/server/index.js",
   "bin": {
-    "cdp-mcp-server": "dist/server/index.js"
+    "argus": "dist/server/index.js"
   },
   "scripts": {
     "build": "tsc",

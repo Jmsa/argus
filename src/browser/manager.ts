@@ -47,7 +47,7 @@ export class BrowserManager {
 
     // Chrome Canary requires a non-default user-data-dir for remote debugging.
     // Use a persistent directory so Chrome doesn't re-initialise on every launch.
-    const userDataDir = this.config.userDataDir ?? join(homedir(), '.cdp-mcp', 'chrome-profile');
+    const userDataDir = this.config.userDataDir ?? join(homedir(), '.argus', 'chrome-profile');
 
     const flags = [
       `--remote-debugging-port=${port}`,
@@ -57,21 +57,21 @@ export class BrowserManager {
       ...(this.config.extraFlags ?? []),
     ];
 
-    process.stderr.write(`[cdp-mcp] Spawning: ${executablePath}\n`);
-    process.stderr.write(`[cdp-mcp] Flags: ${flags.join(' ')}\n`);
+    process.stderr.write(`[argus] Spawning: ${executablePath}\n`);
+    process.stderr.write(`[argus] Flags: ${flags.join(' ')}\n`);
 
     this.process = spawn(executablePath, flags, {
       stdio: ['ignore', 'pipe', 'pipe'],
       detached: false,
     });
 
-    process.stderr.write(`[cdp-mcp] Chrome PID: ${this.process.pid}\n`);
+    process.stderr.write(`[argus] Chrome PID: ${this.process.pid}\n`);
 
     // Discard stdout — never needed
     this.process.stdout?.resume();
 
     this.process.on('error', (err) => {
-      process.stderr.write(`[cdp-mcp] spawn error: ${err.message}\n`);
+      process.stderr.write(`[argus] spawn error: ${err.message}\n`);
     });
 
     // Parse stderr for the "DevTools listening on ws://..." line Chrome emits when ready.
@@ -126,7 +126,7 @@ export class BrowserManager {
 
       const onData = (chunk: Buffer | string) => {
         const text = chunk.toString();
-        process.stderr.write(`[cdp-mcp] chrome stderr: ${text.trimEnd()}\n`);
+        process.stderr.write(`[argus] chrome stderr: ${text.trimEnd()}\n`);
         // Chrome writes this line to stderr as soon as the debug port is open
         const match = text.match(/DevTools listening on (ws:\/\/\S+)/);
         if (match) {
@@ -136,7 +136,7 @@ export class BrowserManager {
       };
 
       const onExit = (code: number | null, signal: string | null) => {
-        process.stderr.write(`[cdp-mcp] Chrome exited early — code: ${code}, signal: ${signal}\n`);
+        process.stderr.write(`[argus] Chrome exited early — code: ${code}, signal: ${signal}\n`);
         cleanup();
         reject(new Error(`Chrome exited (code ${code ?? 'null'}) before debug port was ready`));
       };
