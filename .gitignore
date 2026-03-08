@@ -1,5 +1,6 @@
 node_modules/
 dist/
+!src/inject/dist/
 *.js.map
 .DS_Store
 *.log

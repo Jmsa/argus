@@ -1,4 +1,5 @@
 import type { CDPSession } from '../cdp/client.js';
+import { OVERLAY_SCRIPT } from '../inject/loader.js';
 
 // ─── Welcome page ────────────────────────────────────────────────────────────
 
@@ -222,111 +223,14 @@ export async function injectWelcomePage(session: CDPSession, targetId: string): 
 
 // ─── Floating overlay ────────────────────────────────────────────────────────
 
+export { OVERLAY_SCRIPT };
+
 export interface OverlayData {
   status?: 'connected' | 'recording' | 'idle';
   consoleCount?: number;
   networkCount?: number;
   url?: string;
 }
-
-// Self-contained IIFE — no ES module syntax
-export const OVERLAY_SCRIPT = `
-(function() {
-  'use strict';
-
-  if (window.__argusOverlayInstalled) return;
-  window.__argusOverlayInstalled = true;
-
-  var panel = document.createElement('div');
-  var isDragging = false;
-  var dragStartX = 0;
-  var dragStartY = 0;
-  var panelX = 16;
-  var panelY = 16;
-
-  panel.id = '__argus_overlay';
-  panel.style.cssText = [
-    'position: fixed',
-    'top: ' + panelY + 'px',
-    'left: ' + panelX + 'px',
-    'z-index: 2147483647',
-    'background: rgba(20, 20, 30, 0.92)',
-    'color: #e0e0e0',
-    'font-family: monospace',
-    'font-size: 11px',
-    'padding: 8px 12px',
-    'border-radius: 6px',
-    'border: 1px solid rgba(255,255,255,0.15)',
-    'backdrop-filter: blur(4px)',
-    'cursor: move',
-    'user-select: none',
-    'min-width: 160px',
-    'box-shadow: 0 4px 20px rgba(0,0,0,0.5)',
-  ].join(';');
-
-  panel.innerHTML = [
-    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">',
-    '  <span id="__argus_dot" style="width:8px;height:8px;border-radius:50%;background:#4caf50;flex-shrink:0"></span>',
-    '  <span style="font-weight:bold;color:#90caf9">Argus</span>',
-    '</div>',
-    '<div id="__argus_console" style="margin:2px 0;color:#ce93d8">&#9654; Console: <b>0</b></div>',
-    '<div id="__argus_network" style="margin:2px 0;color:#80cbc4">&#9670; Network: <b>0</b></div>',
-    '<button id="__argus_screenshot" style="',
-    '  margin-top:6px;width:100%;background:rgba(100,130,200,0.3);border:1px solid rgba(100,130,200,0.5);',
-    '  color:#90caf9;padding:3px 6px;border-radius:3px;cursor:pointer;font-size:10px;font-family:monospace',
-    '">Screenshot</button>',
-  ].join('');
-
-  document.documentElement.appendChild(panel);
-
-  // Dragging
-  panel.addEventListener('mousedown', function(e) {
-    isDragging = true;
-    dragStartX = e.clientX - panelX;
-    dragStartY = e.clientY - panelY;
-    e.preventDefault();
-  });
-
-  document.addEventListener('mousemove', function(e) {
-    if (!isDragging) return;
-    panelX = e.clientX - dragStartX;
-    panelY = e.clientY - dragStartY;
-    panel.style.left = panelX + 'px';
-    panel.style.top = panelY + 'px';
-  });
-
-  document.addEventListener('mouseup', function() {
-    isDragging = false;
-  });
-
-  // Screenshot button
-  var btn = document.getElementById('__argus_screenshot');
-  if (btn) {
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      window.__argusScreenshotRequested = (window.__argusScreenshotRequested || 0) + 1;
-    });
-  }
-
-  // External update API
-  window.__argusUpdateOverlay = function(data) {
-    var dot = document.getElementById('__argus_dot');
-    var consoleEl = document.getElementById('__argus_console');
-    var networkEl = document.getElementById('__argus_network');
-
-    if (dot && data.status) {
-      var colors = { connected: '#4caf50', recording: '#ff9800', idle: '#9e9e9e' };
-      dot.style.background = colors[data.status] || '#4caf50';
-    }
-    if (consoleEl && data.consoleCount !== undefined) {
-      consoleEl.innerHTML = '&#9654; Console: <b>' + data.consoleCount + '</b>';
-    }
-    if (networkEl && data.networkCount !== undefined) {
-      networkEl.innerHTML = '&#9670; Network: <b>' + data.networkCount + '</b>';
-    }
-  };
-})();
-`;
 
 export class UIDomain {
   constructor(private readonly session: CDPSession) {}
