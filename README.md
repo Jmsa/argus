@@ -35,7 +35,7 @@ Argus came about as part of an ongoing exploration into leveraging agents to rep
 ## Quick Start
 
 ```bash
-git clone https://github.com/your-org/argus
+git clone https://github.com/Jmsa/argus
 cd argus
 npm install
 npm run dev
