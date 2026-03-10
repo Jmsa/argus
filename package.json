@@ -30,6 +30,14 @@
     "typescript": "^5.6.0",
     "vitest": "^4.0.18"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Jmsa/argus.git"
+  },
+  "homepage": "https://github.com/Jmsa/argus#readme",
+  "bugs": {
+    "url": "https://github.com/Jmsa/argus/issues"
+  },
   "engines": {
     "node": ">=18"
   }
