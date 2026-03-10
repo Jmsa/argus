@@ -16,7 +16,14 @@ function ensureFresh(name: string): string {
     const distMtime = statSync(distPath).mtimeMs;
     needsBuild = srcMtime > distMtime;
   } catch {
-    needsBuild = true; // dist missing
+    // If src doesn't exist we're running from the npm package — dist is pre-built.
+    // If dist doesn't exist and src does, we need to build.
+    try {
+      statSync(srcPath);
+      needsBuild = true; // src exists but dist is missing
+    } catch {
+      needsBuild = false; // src doesn't exist, trust pre-built dist
+    }
   }
   if (needsBuild) {
     execSync('npm run build:inject', { stdio: 'inherit', cwd: projectRoot });
