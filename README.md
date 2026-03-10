@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src/assets/argus.png" alt="Argus" width="1000" />
+  <img src="https://raw.githubusercontent.com/Jmsa/argus/main/src/assets/argus_banner.png" alt="Argus" width="1000" />
 </p>
 
 <p align="center">
