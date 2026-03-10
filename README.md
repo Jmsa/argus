@@ -88,6 +88,31 @@ claude mcp add --transport stdio argus -- npm run dev
 
 > If running from source instead, use `"command": "npm"` with `"args": ["run", "dev"]` and set `"cwd"` to the project root.
 
+## Auto-Launch Behavior
+
+By default, Argus does **not** automatically launch Chrome when a Claude session starts. Use the `browser_launch` tool to start Chrome when you need it.
+
+### First-run experience
+
+The first time Claude starts with Argus installed, Chrome opens once automatically so you can verify everything is working. A message on the welcome page explains what's happening. After that first session, auto-launch is off unless you enable it.
+
+### The auto-launch toggle
+
+The welcome page always shows a **Yes / No** toggle for auto-launch:
+
+- **No** (default) — Chrome does not open on Claude start; call `browser_launch` manually
+- **Yes** — Chrome and the welcome page open automatically at the start of every Claude session
+
+The toggle takes effect immediately and persists across sessions. Your preference is stored in `~/.argus/config.json` and can also be edited manually:
+
+```json
+{ "autoLaunch": true }
+```
+
+### CI / scripted environments
+
+Set `ARGUS_NO_LAUNCH=1` to force-skip Chrome launch regardless of the config file. This is useful in CI pipelines or automated environments where a display isn't available.
+
 ## Tools
 
 Argus exposes 32 tools across eight groups.
