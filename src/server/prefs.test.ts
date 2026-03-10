@@ -69,4 +69,14 @@ describe('writePrefs', () => {
       { recursive: true },
     );
   });
+
+  it('ignores non-boolean autoLaunch values', () => {
+    const result = writePrefs({ autoLaunch: 'yes' as unknown as boolean });
+    expect(result).toEqual({ autoLaunch: false }); // falls back to current value
+    expect(fs.writeFileSync).toHaveBeenCalledWith(
+      expect.stringContaining('config.json'),
+      JSON.stringify({ autoLaunch: false }, null, 2),
+      'utf-8',
+    );
+  });
 });

@@ -21,6 +21,7 @@ const shouldLaunch = (() => {
 if (shouldLaunch) {
   process.stderr.write('[argus] Launching Chrome...\n');
   await browserManager.launch();
+  if (firstRun) writePrefs({ autoLaunch: false });
   process.stderr.write('[argus] Chrome ready.\n');
 
   const welcomeTargetId = await browserManager.openTab('about:blank');
@@ -31,7 +32,6 @@ if (shouldLaunch) {
   await welcomeSession.send('Page.navigate', { url: welcomeUrl.toString() });
 
   if (firstRun) {
-    writePrefs({ autoLaunch: false });
     process.stderr.write('[argus] First run — Chrome opened so you can verify Argus is working. Auto-launch is off by default; toggle it on the welcome page.\n');
   }
   process.stderr.write(`[argus] Welcome page open — targetId: ${welcomeTargetId}\n`);

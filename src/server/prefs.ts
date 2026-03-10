@@ -26,7 +26,9 @@ export function readPrefs(): ArgusPrefs {
 export function writePrefs(partial: Partial<ArgusPrefs>): ArgusPrefs {
   mkdirSync(PREFS_DIR, { recursive: true });
   const current = readPrefs();
-  const updated = { ...current, ...partial };
+  const sanitized: Partial<ArgusPrefs> = {};
+  if (typeof partial.autoLaunch === 'boolean') sanitized.autoLaunch = partial.autoLaunch;
+  const updated = { ...current, ...sanitized };
   writeFileSync(PREFS_PATH, JSON.stringify(updated, null, 2), 'utf-8');
   return updated;
 }
