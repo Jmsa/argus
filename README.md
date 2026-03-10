@@ -14,9 +14,13 @@
 
 ---
 
-Argus connects directly to Chrome via the [Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) and exposes browser debugging as MCP tools — no Puppeteer, no Playwright, no browser abstraction layer. Spawn Chrome, attach to tabs, record console output, intercept network requests, inject mocks, and capture screenshots, all from your MCP client.
+Argus connects directly to Chrome via the [Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) and exposes browser debugging as MCP tools - no Puppeteer, no Playwright, no browser abstraction layer. Spawn Chrome, attach to tabs, record console output, intercept network requests, inject mocks, and capture screenshots, all from your MCP client.
 
-The name comes from Argus Panoptes — the 100-eyed giant of Greek mythology who could watch everything at once and never fully slept. That's the goal: total visibility into what a browser is doing.
+The name comes from Argus Panoptes - the 100-eyed giant of Greek mythology who could watch everything at once and never fully slept. That's the goal: total visibility into what the browser is doing.
+
+## Motivation
+
+Argus came about as part of an ongoing exploration into leveraging agents to reproduce reported issues as well as "manually" debug/record them on the fly. As a result you can expect to see bugs in Argus itself as well as plenty room for improvement and growth over time.
 
 ## Features
 
@@ -68,7 +72,7 @@ claude mcp add --transport stdio argus -- npm run dev
 
 ## Tools
 
-Argus exposes 22 tools across six groups.
+Argus exposes 32 tools across eight groups.
 
 ### Browser
 
@@ -124,6 +128,24 @@ Argus exposes 22 tools across six groups.
 | `page_reload` | Reload the tab (optionally bypassing cache) |
 | `page_get_url` | Get the current URL and title of a tab |
 
+### DOM
+
+| Tool | Description |
+|---|---|
+| `dom_query` | Query the first element matching a CSS selector and return its properties |
+| `dom_query_all` | Query all elements matching a CSS selector |
+| `dom_click` | Click the first element matching a CSS selector (scrolls into view first) |
+| `dom_input_value` | Set an input's value and dispatch input/change events (React/Vue safe) |
+| `dom_get_value` | Get the current value of an input element |
+| `dom_wait_for` | Wait for an element to appear in the DOM (polls every 100ms) |
+
+### Banner
+
+| Tool | Description |
+|---|---|
+| `banner_update` | Push state updates to the Argus banner overlay (recording indicator, counts) |
+| `banner_get_screenshots` | Retrieve screenshots captured via the banner Screenshot button |
+
 ## Skills
 
 Skills are Claude Code workflows that invoke Argus tools automatically. Install the plugin to get them as slash commands:
@@ -170,6 +192,26 @@ npm run typecheck # type-check without emitting
 ```
 
 Chrome profile data is stored at `~/.argus/chrome-profile` so Chrome doesn't reinitialise on every restart.
+
+## Contributing
+
+Contributions are welcome. Argus is an active exploration project, so there's plenty of room to improve.
+
+**Before opening a PR:**
+
+1. Fork the repo and create a branch from `main`
+2. Run `npm run typecheck` — PRs must pass type checking
+3. Test your changes against a live browser session
+4. Keep commits focused; one logical change per PR
+
+**Good areas to contribute:**
+
+- New CDP domain wrappers (e.g. Performance, Accessibility)
+- Additional skills / slash commands
+- Bug reports with reproduction steps
+- Documentation improvements
+
+Open an issue first for large changes so we can align on approach before you invest time in implementation.
 
 ## License
 
