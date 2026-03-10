@@ -114,6 +114,7 @@ function install(): void {
         recHtml,
         '<button class="__ab" id="__ab_shot">&#128247; Screenshot</button>',
         '<button class="__ab" id="__ab_reload">&#8635; Reload</button>',
+        '<button class="__ab" id="__ab_home">&#8962; Dashboard</button>',
         '<div class="__a_sep"></div>',
         '<span class="__a_stat">NET <b>' + state.networkCount + '</b></span>',
         '<span class="__a_stat">LOG <b>' + state.consoleCount + '</b></span>',
@@ -124,6 +125,7 @@ function install(): void {
     wire('__ab_stop',   function() { notify('stop'); });
     wire('__ab_shot',   function() { notify('screenshot'); });
     wire('__ab_reload', function() { notify('reload'); });
+    wire('__ab_home',   function() { window.open('http://127.0.0.1:7842', '_blank'); });
 
     // Hover expand/collapse on the strip only; tab uses click to toggle
     b.onmouseenter = expand;
