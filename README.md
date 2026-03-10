@@ -32,7 +32,20 @@ Argus came about as part of an ongoing exploration into leveraging agents to rep
 - **No dependencies** — direct WebSocket connection to Chrome's debug port, no browser driver needed
 - **Injectable overlay** — floating status widget injected into every inspected page showing live counts
 
-## Quick Start
+## Installation
+
+### From npm (recommended)
+
+```bash
+# Install globally
+npm install -g @jmsa/argus-mcp
+argus-mcp
+
+# Or run without installing
+npx @jmsa/argus-mcp
+```
+
+### From source
 
 ```bash
 git clone https://github.com/Jmsa/argus
@@ -50,9 +63,13 @@ Chrome Canary opens automatically on startup with the Argus welcome page. Connec
 
 ### MCP Client Configuration
 
-**Claude Code** — run this once from the project root:
+**Claude Code** — run this once:
 
 ```bash
+# npm package (recommended)
+claude mcp add --transport stdio argus -- argus-mcp
+
+# from source
 claude mcp add --transport stdio argus -- npm run dev
 ```
 
@@ -63,12 +80,13 @@ claude mcp add --transport stdio argus -- npm run dev
   "mcpServers": {
     "argus": {
       "type": "stdio",
-      "command": "npm",
-      "args": ["run", "dev"]
+      "command": "argus-mcp"
     }
   }
 }
 ```
+
+> If running from source instead, use `"command": "npm"` with `"args": ["run", "dev"]` and set `"cwd"` to the project root.
 
 ## Tools
 
