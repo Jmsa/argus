@@ -28,6 +28,10 @@ export function startStaticServer(): Promise<StaticServer> {
       // PATCH /api/prefs
       if (url.pathname === '/api/prefs' && req.method === 'PATCH') {
         let body = '';
+        req.on('error', () => {
+          res.writeHead(400);
+          res.end();
+        });
         req.on('data', (chunk) => { body += chunk; });
         req.on('end', () => {
           try {
