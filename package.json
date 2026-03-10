@@ -1,6 +1,6 @@
 {
   "name": "@jmsa/argus-mcp",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Argus — Chrome DevTools Protocol MCP server for browser debugging",
   "keywords": [
     "mcp",
