@@ -332,6 +332,73 @@
         max-width: 100%;
         border-radius: 6px;
       }
+      .first-run-banner {
+        display: none;
+        background: rgba(121, 192, 255, 0.07);
+        border: 1px solid rgba(121, 192, 255, 0.25);
+        border-radius: 8px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--text);
+      }
+      .first-run-banner.visible {
+        display: block;
+      }
+      .first-run-banner strong {
+        color: var(--blue);
+      }
+      .prefs-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 24px 0;
+        padding: 14px 16px;
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+      .prefs-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        color: var(--muted);
+        flex: 1;
+      }
+      .toggle {
+        display: flex;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        overflow: hidden;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .toggle button {
+        background: none;
+        border: none;
+        padding: 5px 14px;
+        cursor: pointer;
+        color: var(--muted);
+        font-family: var(--font);
+        font-size: 11px;
+        font-weight: 600;
+        transition: background 0.1s, color 0.1s;
+      }
+      .toggle button.active-yes {
+        background: rgba(63, 185, 80, 0.15);
+        color: var(--green);
+      }
+      .toggle button.active-no {
+        background: rgba(255, 123, 114, 0.12);
+        color: var(--red);
+      }
+      .toggle button:hover:not(.active-yes):not(.active-no) {
+        background: var(--bg3);
+        color: var(--text);
+      }
     </style>
   </head>
   <body>
@@ -343,6 +410,21 @@
       Browser debugging via MCP &mdash; remote debugging active on this tab
       &nbsp;<span class="target-id">${targetId}</span>
     </p>
+
+    <div class="first-run-banner" id="first-run-banner">
+      <strong>Welcome to Argus!</strong> You're seeing this because it's the first time
+      you've run Claude with Argus installed. This is the first and last time this page
+      will be automatically opened &mdash; but you can use the toggle below if you'd like
+      it to open with every new Claude session.
+    </div>
+
+    <div class="prefs-bar">
+      <span class="prefs-label">Auto-launch Chrome on Claude start</span>
+      <div class="toggle" id="auto-launch-toggle">
+        <button id="toggle-yes" onclick="setAutoLaunch(true)">Yes</button>
+        <button id="toggle-no" onclick="setAutoLaunch(false)">No</button>
+      </div>
+    </div>
 
     <details class="readme">
       <summary>README</summary>
@@ -586,7 +668,34 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
       const readme = ${readmeContent};
+      const firstRun = ${firstRun};
+
       document.getElementById('readme-body').innerHTML = marked.parse(readme);
+
+      if (firstRun) {
+        document.getElementById('first-run-banner').classList.add('visible');
+      }
+
+      function applyToggle(autoLaunch) {
+        document.getElementById('toggle-yes').className = autoLaunch ? 'active-yes' : '';
+        document.getElementById('toggle-no').className = autoLaunch ? '' : 'active-no';
+      }
+
+      async function setAutoLaunch(value) {
+        const res = await fetch('/api/prefs', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ autoLaunch: value }),
+        });
+        const prefs = await res.json();
+        applyToggle(prefs.autoLaunch);
+      }
+
+      // Load current pref state on page load
+      fetch('/api/prefs')
+        .then((r) => r.json())
+        .then((prefs) => applyToggle(prefs.autoLaunch))
+        .catch(() => applyToggle(false));
     </script>
   </body>
 </html>
