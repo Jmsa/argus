@@ -682,13 +682,21 @@
       }
 
       async function setAutoLaunch(value) {
-        const res = await fetch('/api/prefs', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ autoLaunch: value }),
-        });
-        const prefs = await res.json();
-        applyToggle(prefs.autoLaunch);
+        try {
+          const res = await fetch('/api/prefs', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ autoLaunch: value }),
+          });
+          const prefs = await res.json();
+          applyToggle(prefs.autoLaunch);
+        } catch {
+          // Revert to current saved state on failure
+          fetch('/api/prefs')
+            .then((r) => r.json())
+            .then((prefs) => applyToggle(prefs.autoLaunch))
+            .catch(() => applyToggle(false));
+        }
       }
 
       // Load current pref state on page load
