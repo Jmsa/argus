@@ -2,8 +2,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { BrowserManager } from '../browser/manager.js';
-import { injectWelcomePage } from '../domains/ui.js';
-import { registerAllTools } from './tools.js';
+import { injectWelcomePage } from '../domains/welcome.js';
+import { registerAllTools } from './tools/index.js';
 
 const browserManager = new BrowserManager({ headless: false });
 

@@ -9,7 +9,7 @@ const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 function ensureFresh(name: string): string {
   const srcPath = join(projectRoot, `src/inject/${name}.ts`);
-  const distPath = join(projectRoot, `src/inject/dist/${name}.js`);
+  const distPath = join(projectRoot, `dist/inject/${name}.js`);
   let needsBuild = false;
   try {
     const srcMtime = statSync(srcPath).mtimeMs;
@@ -25,4 +25,3 @@ function ensureFresh(name: string): string {
 }
 
 export const BANNER_SCRIPT = ensureFresh('banner');
-export const OVERLAY_SCRIPT = ensureFresh('overlay');

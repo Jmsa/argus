@@ -5,6 +5,7 @@ import { join } from 'path';
 import { CDPClient, CDPSession } from '../cdp/client.js';
 import type { TabInfo, AttachToTargetResult, CreateTargetResult } from '../types/cdp.js';
 import { DEFAULT_CONFIG, getDefaultChromePath, type ServerConfig } from '../types/config.js';
+import { TabStateManager } from './tab-state-manager.js';
 
 const REQUIRED_FLAGS = [
   '--no-first-run',
@@ -28,6 +29,7 @@ export class BrowserManager {
   private client: CDPClient | null = null;
   private config: ServerConfig;
   private shutdownRegistered = false;
+  readonly tabStates = new TabStateManager();
 
   constructor(config: Partial<ServerConfig> = {}) {
     this.config = {
@@ -179,6 +181,7 @@ export class BrowserManager {
   async closeTab(targetId: string): Promise<void> {
     this.assertConnected();
     await this.client!.send('Target.closeTarget', { targetId });
+    this.tabStates.delete(targetId);
   }
 
   async attachToTab(targetId: string): Promise<CDPSession> {
@@ -206,6 +209,7 @@ export class BrowserManager {
   disconnect(): void {
     this.client?.close();
     this.client = null;
+    this.tabStates.clear();
   }
 
   async shutdown(): Promise<void> {

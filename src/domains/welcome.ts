@@ -1,7 +1,4 @@
 import type { CDPSession } from '../cdp/client.js';
-import { OVERLAY_SCRIPT } from '../inject/loader.js';
-
-// ─── Welcome page ────────────────────────────────────────────────────────────
 
 function buildWelcomeHTML(targetId: string): string {
   return `<!DOCTYPE html>
@@ -197,13 +194,7 @@ function buildWelcomeHTML(targetId: string): string {
 
 <div class="footer">
   <p>Connect your MCP client to this server, then use the tools above to control this Chrome instance.</p>
-  <p style="margin-top:8px">The overlay widget in the top-left of any inspected page shows live console and network counts.</p>
-  <button class="dismiss" onclick="this.closest('.footer').querySelector('.hint').style.display='block';this.remove()">
-    &#10003; Got it — start debugging
-  </button>
-  <p class="hint" style="display:none;margin-top:12px;color:#56d364">
-    Use <code>tab_open</code> to open your target URL, then <code>console_start</code> + <code>network_start_recording</code>.
-  </p>
+  <p style="margin-top:8px">Use <code>tab_open</code> to open your target URL, then <code>console_start</code> + <code>network_start_recording</code>.</p>
 </div>
 </body>
 </html>`;
@@ -219,40 +210,4 @@ export async function injectWelcomePage(session: CDPSession, targetId: string): 
     frameId,
     html: buildWelcomeHTML(targetId),
   });
-}
-
-// ─── Floating overlay ────────────────────────────────────────────────────────
-
-export { OVERLAY_SCRIPT };
-
-export interface OverlayData {
-  status?: 'connected' | 'recording' | 'idle';
-  consoleCount?: number;
-  networkCount?: number;
-  url?: string;
-}
-
-export class UIDomain {
-  constructor(private readonly session: CDPSession) {}
-
-  async injectOverlay(): Promise<void> {
-    // Inject for future navigations
-    await this.session.send('Page.addScriptToEvaluateOnNewDocument', {
-      source: OVERLAY_SCRIPT,
-    });
-
-    // Inject immediately into current page
-    await this.session.send('Runtime.evaluate', {
-      expression: OVERLAY_SCRIPT,
-      silent: true,
-    });
-  }
-
-  async updateOverlay(data: OverlayData): Promise<void> {
-    const json = JSON.stringify(data);
-    await this.session.send('Runtime.evaluate', {
-      expression: `if (typeof window.__argusUpdateOverlay === 'function') window.__argusUpdateOverlay(${json});`,
-      silent: true,
-    });
-  }
 }
