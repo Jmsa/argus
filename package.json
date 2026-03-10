@@ -1,15 +1,31 @@
 {
-  "name": "argus-mcp",
+  "name": "@jmsa/argus-mcp",
   "version": "1.0.0",
   "description": "Argus — Chrome DevTools Protocol MCP server for browser debugging",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "chrome",
+    "devtools",
+    "cdp",
+    "browser",
+    "debugging",
+    "claude"
+  ],
+  "license": "MIT",
   "type": "module",
   "main": "dist/server/index.js",
   "bin": {
-    "argus": "dist/server/index.js"
+    "argus-mcp": "dist/server/index.js"
   },
+  "files": [
+    "dist/"
+  ],
   "scripts": {
+    "clean": "rm -rf dist",
     "build:inject": "tsx src/inject/build.ts",
-    "build": "npm run build:inject && tsc",
+    "build": "npm run clean && npm run build:inject && tsc",
+    "prepare": "npm run build",
     "dev": "npm run build:inject && tsx src/server/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -37,6 +53,9 @@
   "homepage": "https://github.com/Jmsa/argus#readme",
   "bugs": {
     "url": "https://github.com/Jmsa/argus/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "engines": {
     "node": ">=18"
