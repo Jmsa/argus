@@ -14,10 +14,7 @@ const firstRun = isFirstRun();
 
 const shouldLaunch = (() => {
   if (process.env['ARGUS_NO_LAUNCH'] === '1') return false;
-  if (firstRun) {
-    writePrefs({ autoLaunch: false });
-    return true;
-  }
+  if (firstRun) return true;
   return readPrefs().autoLaunch;
 })();
 
@@ -34,6 +31,7 @@ if (shouldLaunch) {
   await welcomeSession.send('Page.navigate', { url: welcomeUrl.toString() });
 
   if (firstRun) {
+    writePrefs({ autoLaunch: false });
     process.stderr.write('[argus] First run — Chrome opened so you can verify Argus is working. Auto-launch is off by default; toggle it on the welcome page.\n');
   }
   process.stderr.write(`[argus] Welcome page open — targetId: ${welcomeTargetId}\n`);
