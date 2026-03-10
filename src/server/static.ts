@@ -3,9 +3,9 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const welcomeHTML = readFileSync(join(root, 'src', 'domains', 'welcome.html'), 'utf-8');
-const readmeContent = readFileSync(join(root, 'README.md'), 'utf-8');
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const welcomeHTML = readFileSync(join(__dirname, '..', 'domains', 'welcome.html'), 'utf-8');
+const readmeContent = readFileSync(join(__dirname, '..', '..', 'README.md'), 'utf-8');
 
 export interface StaticServer {
   port: number;
